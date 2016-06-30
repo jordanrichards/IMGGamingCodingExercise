@@ -1,53 +1,58 @@
 package testapp
 
-import org.junit.Assert._
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+
 import junit.framework.TestCase
-import mainapp.MatchDataUtility
-import scala.io.Source
+import mainapp.Match
 
 class IMGGamingCodingTester extends TestCase
 {
-  var matchUtility: MatchDataUtility = _
-  var dataset1: Array[Integer] = _ 
-  var dataset2: Array[Integer] = _ 
+  var matchOption: Option[Match] = None
+  val file1 = "input/sample1.txt"
+  val file2 = "input/sample2.txt"
 
   override def setUp()
   {
-    def getDataFromFile(filename: String) = 
-    {
-      val filename = "input/sample2.txt"
-      val source = Source.fromFile(filename)
-      val lines = source.getLines().toArray
-      source.close   
-      lines.filter(_.length > 0).map(Integer.decode(_))      
-    }
-    
-    matchUtility = new MatchDataUtility
-    dataset1 = getDataFromFile("input/sample1.txt")
-    dataset2 = getDataFromFile("input/sample2.txt")
+    matchOption = Some(Match())
   }
 
-  def testUtilityCreatedOK()
+  def testMatchCreatedOK()
   {
-    assertNotNull("the tool must have a valid reference", matchUtility)
+    assertFalse("the tool must have a valid reference", matchOption.isEmpty)
   } 
+   
+  def testInsertEventsFirstOK()
+  {
+    val matchUnit = matchOption.get
+    matchUnit.update(file1)
+
+    val events = matchUnit.getAllEvents
+    assertTrue("valid events must be = 27", events.size == 27)
+//    events.foreach { println }
+  }
   
-  def testInsertEventSuccess()
+  def testInsertEventsSecondOK()
+  {
+    val matchUnit = matchOption.get
+    matchUnit.update(file2)
+
+    val events = matchUnit.getAllEvents       
+    assertTrue("valid events must be = 25", events.size == 25)
+    events.foreach { println }
+  }  
+}
+
+/*  def testInsertEventSuccess()
   {
     val event = 0x781002
-    assertTrue("this must be a valid message", matchUtility.insertData(event))
+    assertTrue("this must be a valid message", matchUnit.insertData(event))
   }
   
   def testInsertEventFailure()
   {
     val event = 0x781001
-    assertFalse("this must be a non valid message", matchUtility.insertData(event))
+    assertFalse("this must be a non valid message", matchUnit.insertData(event))
   }
-  
-  def testInsertConsistentEvents()
-  {
-    matchUtility.insertData(dataset2)
-    matchUtility.getAllEvents().foreach(println)
-    assertTrue("this must be a valid dataset", true)
-  }
-}
+*/
+

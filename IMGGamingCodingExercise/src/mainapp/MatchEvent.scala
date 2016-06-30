@@ -1,7 +1,8 @@
 package mainapp
 
-case class MatchEvent(pointsScored:Int,whoScored:Int,team2Total:Int,team1Total:Int,timeElapsed:Int)
+case class MatchEvent(pointsScored:Int,whoScored:Int,team2Total:Int,team1Total:Int,timeElapsed:Int) extends Ordered[MatchEvent]
 {
+  def compare(that: MatchEvent) = this.timeElapsed - that.timeElapsed
   def scorer = if(whoScored == 0) "player 1" else "player 2"
   override def toString(): String = 
   {
