@@ -3,6 +3,7 @@ package mainapp
 import scala.Iterator
 import scala.Range
 import scala.io.Source
+import scala.collection.mutable.ListBuffer
 
 case class Match()
 {
@@ -44,19 +45,44 @@ case class Match()
   }
   //definition for the cleaner
   private case class DataCleaner(data: List[MatchEvent])
-  {    
+  {
     def clean(): List[MatchEvent] = 
     {
-      val buffer = for
+      val buffer = ListBuffer[MatchEvent]()
+
+      for
       {
-        i <- Range(0, data.length - 1)
+        i <- Range(0, data.length)
         val thisEvent = data(i)
-        val nextEvent = data(i + 1)
-        if(thisEvent < nextEvent)
+        if(thisEvent.pointsScored != 0) //exclude events that do not offer new info
       }
-      yield
       {
-        thisEvent
+        if(i == data.length - 1)
+        {
+          buffer += thisEvent
+        }
+        else
+        {
+          val nextEvent = data(i + 1)
+
+          //exclude events that are not in chronological order
+          if(thisEvent < nextEvent)
+          {
+            //fix discrepancies in team 1 total
+            if(thisEvent.team1Total > nextEvent.team1Total)
+            {
+              thisEvent.team1Total = nextEvent.team1Total
+            }
+
+            //fix discrepancies in team 2 total
+            if(thisEvent.team2Total > nextEvent.team2Total)
+            {
+              thisEvent.team2Total = nextEvent.team2Total
+            }
+            
+            buffer += thisEvent
+          }
+        }
       }
       
       buffer.toList
@@ -69,7 +95,7 @@ case class Match()
   
   //hold the events of the match
   private var events = List[MatchEvent]()
-
+  
   /*
    * match behaviour - public interface
    */
@@ -79,7 +105,13 @@ case class Match()
   def getLastEvents(n: Int) = if(n > events.length) Iterator(Nil: _*) else Iterator(events.slice(events.size - n, events.size): _*)   
   def update(filename: String)
   {
-    var data = DataParser(filename).parse  //parse the data
+    val data = DataParser(filename).parse  //parse the data
     events = events ::: data               //update the events
-  }  
+  }
+  def display()
+  {
+    println("%15s %10s %12s %12s %12s\n".format("points scored","scorer","team1 Total","team2 Total","time Elapsed"))
+    println("-----------------------------------------------------------------\n")
+    events.foreach { println }
+  }
 }
